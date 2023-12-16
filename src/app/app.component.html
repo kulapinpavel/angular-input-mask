@@ -1,3 +1,10 @@
-<input inputMask="___-#__" [formControl]="control" [inputMaskOnlyNumbers]="false"/>
+<input inputMask="+_ (___) ___ __ __" [formControl]="control" [inputMaskOnlyNumbers]="false"/>
 
 <pre>{{control.getRawValue()}}</pre>
+
+<mat-form-field>
+  <mat-label>label</mat-label>
+  <input matInput inputMask="+###/____" [(ngModel)]="ngValue" />
+</mat-form-field>
+
+<pre>{{ngValue}}</pre>

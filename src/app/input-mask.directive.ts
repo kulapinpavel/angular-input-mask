@@ -52,7 +52,7 @@ export class InputMaskDirective implements OnInit, ControlValueAccessor {
   onPaste(e: ClipboardEvent): void {
     e.preventDefault();
     const clipboardString = e.clipboardData?.getData('text').replaceAll(new RegExp(/(\W|\D)/, 'g'), "");
-    console.log(clipboardString)
+
     if(clipboardString) {
       for (let i = 0; i < clipboardString.length; i++) {
         this._applyChanges(this._processMaskInput(clipboardString.charAt(i), this.el.nativeElement.selectionStart));
@@ -65,18 +65,14 @@ export class InputMaskDirective implements OnInit, ControlValueAccessor {
     if(Number(key) === +key) replacementChar = this.inputMaskNumberChar;
     else replacementChar = this.inputMaskChar;
 
-    if(this.inputMask?.at(position) === replacementChar) {
-      const maskKeyPosition = this.inputMask?.indexOf(replacementChar, position);
+    const maskKeyPosition = this.inputMask?.indexOf(replacementChar, position);
+    if(maskKeyPosition && this.inputMask?.at(maskKeyPosition) === replacementChar) {
       if (maskKeyPosition > -1) {
         this.value = this._replaceAt(this.value, key, maskKeyPosition);
       }
-      const nextNumberMask = this.inputMask?.substring(position + 1).indexOf(this.inputMaskNumberChar) + 1;
-      const nextCharMask = this.inputMask?.substring(position + 1).indexOf(this.inputMaskChar) + 1;
-
-      if (nextNumberMask > 0 && nextCharMask > 0) return position + Math.min(nextNumberMask, nextCharMask);
-      if (nextNumberMask > 0) return position + nextNumberMask;
-      if (nextCharMask > 0) return position + nextCharMask;
-      return position + 1;
+      return maskKeyPosition < this.value.length && maskKeyPosition > 0
+        ? maskKeyPosition + 1
+        : maskKeyPosition;
     }
     return position;
   }
@@ -101,9 +97,9 @@ export class InputMaskDirective implements OnInit, ControlValueAccessor {
 
   private _applyChanges(position: number): void {
     this.el.nativeElement.value = this.value;
-    if(this.onChange) this.onChange(this.inputMaskOnlyNumbers ? this._maskToNumber() : this.value);
     this.el.nativeElement.selectionStart = position;
     this.el.nativeElement.selectionEnd = position;
+    if(this.onChange) this.onChange(this.inputMaskOnlyNumbers ? this._maskToNumber() : this.value);
   }
 
   private _maskToNumber(): number | null {
@@ -113,7 +109,7 @@ export class InputMaskDirective implements OnInit, ControlValueAccessor {
   }
 
   writeValue(obj: string): void {
-    this.value = obj ?? '';
+    this.value = obj ?? this.value;
   }
   registerOnChange(fn: any): void {
     this.onChange = fn;
